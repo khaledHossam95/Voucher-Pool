@@ -13,6 +13,7 @@ import { CreateVoucherDto } from './dto/create-voucher.dto';
 import { UpdateVoucherDto } from './dto/update-voucher.dto';
 import { DeleteVoucherDto } from './dto/delete-voucher.dto';
 import { CreateVoucherForOfferDto } from './dto/create-vouchers-for-offer.dto';
+import { RedeemVoucherDto } from './dto/redeem-voucher.dto';
 
 //Take the request and pass it to dto , to make sure its validated and then send it to service to be queryed or do any service on it
 @Controller('vouchers')
@@ -32,7 +33,7 @@ export class VoucherController {
     return reponse;
   }
 
-  @Patch('/:id')
+  @Patch('updateVoucher/:id')
   async updateVoucherById(
     @Param('id') id: string,
     @Body() updateVoucherDto: UpdateVoucherDto,
@@ -54,5 +55,12 @@ export class VoucherController {
     return this.voucherService.makeVouchersByOfferForCustomers(
       createVoucherForOfferDto,
     );
+  }
+
+  @Patch('redeemVoucher')
+  async redeemVoucher(
+    @Body() redeemVoucherDto: RedeemVoucherDto,
+  ): Promise<string> {
+    return this.voucherService.redeemVoucher(redeemVoucherDto);
   }
 }

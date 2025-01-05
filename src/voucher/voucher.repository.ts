@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { VoucherEntity } from './voucher.entity';
-import { Repository } from 'typeorm';
+import { EntityRepository, Repository } from 'typeorm';
 import { CreateVoucherDto } from './dto/create-voucher.dto';
 import { UpdateVoucherDto } from './dto/update-voucher.dto';
 import { CustomerEntity } from 'src/cutomer/customer.entity';
@@ -12,15 +12,15 @@ import { OfferEntity } from 'src/offer/offer.entity';
 export class VoucherRepository {
   constructor(
     @InjectRepository(VoucherEntity)
-    private readonly voucherEntityRepository: Repository<VoucherEntity>,
+    private readonly VoucherEntityRepo: Repository<VoucherEntity>,
   ) {}
 
   async findAllVouchers(): Promise<VoucherEntity[]> {
-    return this.voucherEntityRepository.find();
+    return this.VoucherEntityRepo.find();
   }
 
   async findVoucherById(id: string): Promise<VoucherEntity> {
-    const found = await this.voucherEntityRepository.findOneBy({ id });
+    const found = await this.VoucherEntityRepo.findOneBy({ id });
     if (!found) {
       throw new NotFoundException(`Task with ID "${id}" not found`);
     }
@@ -35,13 +35,13 @@ export class VoucherRepository {
   ): Promise<VoucherEntity> {
     //needs to be iniatlizied to invoke the @Beforeinsert Hook , and then save it
     //if the values are not defined , create will use the default value
-    const created = this.voucherEntityRepository.create({
+    const created = this.VoucherEntityRepo.create({
       isRedeemed,
       dateOfUsage,
       customer,
       offer,
     });
-    const saved = await this.voucherEntityRepository.save(created);
+    const saved = await this.VoucherEntityRepo.save(created);
     return saved;
   }
 
@@ -49,11 +49,11 @@ export class VoucherRepository {
     offer: OfferEntity,
     customer: CustomerEntity,
   ): Promise<VoucherEntity> {
-    const createVoucher = await this.voucherEntityRepository.create({
+    const createVoucher = await this.VoucherEntityRepo.create({
       customer,
       offer,
     });
-    return this.voucherEntityRepository.save(createVoucher);
+    return this.VoucherEntityRepo.save(createVoucher);
   }
 
   async updateVoucherById(
@@ -62,11 +62,11 @@ export class VoucherRepository {
   ): Promise<VoucherEntity> {
     const voucher = await this.findVoucherById(id);
     Object.assign(voucher, updateData);
-    return this.voucherEntityRepository.save(voucher);
+    return this.VoucherEntityRepo.save(voucher);
   }
 
   async deleteVoucher(id: string): Promise<void> {
-    await this.voucherEntityRepository.delete(id);
+    await this.VoucherEntityRepo.delete(id);
   }
 
   //   async findAllwithfilter(filterDto: GetTasksFilterDto): Promise<Task[]> {

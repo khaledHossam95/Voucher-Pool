@@ -8,12 +8,17 @@ import { OfferService } from 'src/offer/offer.service';
 
 import { CustomerRepository } from 'src/cutomer/customer.repository';
 import { CreateVoucherForOfferDto } from './dto/create-vouchers-for-offer.dto';
+import { RedeemVoucherDto } from './dto/redeem-voucher.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 //Deconsturct DTOs and form data to be query from database , or form data retrived from database
 @Injectable()
 export class VoucherService {
   constructor(
-    private voucherRepo: VoucherRepository,
+    @InjectRepository(VoucherEntity)
+    private voucherRepository: Repository<VoucherEntity>, //for normal repo methods
+    private voucherRepo: VoucherRepository, //for the custom repo methods 
     private customerRepo: CustomerRepository, //best practice to use service instead
     private offerService: OfferService,
   ) {}
@@ -74,7 +79,7 @@ export class VoucherService {
   async makeVouchersByOfferForCustomers(
     createVoucherForOfferDto: CreateVoucherForOfferDto,
   ): Promise<VoucherEntity[]> {
-    const offer = createVoucherForOfferDto.offer; 
+    const offer = createVoucherForOfferDto.offer;
     const customers = await this.offerService.createVouchersForOffer(offer.id);
     const vouchersCreated: VoucherEntity[] = [];
     for (const customer of customers) {
@@ -86,4 +91,27 @@ export class VoucherService {
     }
     return vouchersCreated;
   }
+
+  async redeemVoucher(redeemVoucherDto: RedeemVoucherDto): Promise<string> {
+    const { code, email } = redeemVoucherDto;
+    const voucher = await this.voucherRepository.findOneOrFail({
+      where: {
+        code: code,
+        customer: {
+          email: email,
+        },
+      },
+      relations: ['customer'], // because of lazy loading
+    });
+    if (voucher.isRedeemed) {
+      throw new BadRequestException('Voucher already redeemed !');
+    } else {
+      voucher.isRedeemed = true;
+      voucher.dateOfUsage = new Date();
+    }
+    await this.voucherRepo.updateVoucherById(voucher.id, voucher);
+    return `Voucher Redeemed ! Discount value :"${voucher.offer.discountPercentage}"`;
+  }
+
+  
 }

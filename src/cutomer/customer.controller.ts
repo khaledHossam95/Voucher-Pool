@@ -12,6 +12,8 @@ import { CustomerEntity } from './customer.entity';
 import { CreateCustomerDto } from './dto/create-customer.dto';
 import { DeleteCustomerDto } from './dto/delete-customer.dto';
 import { UpdateCustomerDto } from './dto/update-customer.dto';
+import { VoucherEntity } from 'src/voucher/voucher.entity';
+import { GetVouchersByEmailDto } from './dto/get-vouchers-by-email.dto';
 
 @Controller('customers')
 export class CustomerController {
@@ -29,7 +31,7 @@ export class CustomerController {
     return this.customerService.createCustomer(createCustomerDto);
   }
 
-  @Patch('/:id')
+  @Patch('updateCustomer/:id')
   async updateCustomerById(
     @Param('id') id: string,
     @Body() updateCustomerDto: UpdateCustomerDto,
@@ -42,5 +44,12 @@ export class CustomerController {
     @Param() deleteCustomerDto: DeleteCustomerDto,
   ): Promise<string> {
     return this.customerService.deleteCustomer(deleteCustomerDto);
+  }
+
+  @Patch('getVouchersByEmail')
+  async getVouchersByEmail(
+    @Body() getVouchersByEmailDto: GetVouchersByEmailDto,
+  ): Promise<VoucherEntity[]> {
+    return this.customerService.getVouchersForCustomer(getVouchersByEmailDto);
   }
 }
